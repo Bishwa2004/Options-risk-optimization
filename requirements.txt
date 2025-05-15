@@ -1,6 +1,11 @@
 yfinance
-pandas
 numpy
 scipy
 scikit-learn
 matplotlib
+pandas
+openpyxl
+statsmodels
+matplotlib
+beautifulsoup4
+requests
