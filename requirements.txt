@@ -6,6 +6,5 @@ matplotlib
 pandas
 openpyxl
 statsmodels
-matplotlib
 beautifulsoup4
 requests
