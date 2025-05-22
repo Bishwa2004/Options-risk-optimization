@@ -11,12 +11,26 @@ from dotenv import load_dotenv
 load_dotenv()
 
 # Replace with actual OpenAI or HuggingFace call later
+import requests
+
 def analyze_sentiment_with_llm(prompt):
+    HF_TOKEN = os.getenv("HUGGINGFACE_API_KEY")
+    headers = {"Authorization": f"Bearer {HF_TOKEN}"}
+    payload = {"inputs": prompt}
+
+    response = requests.post(
+        "https://api-inference.huggingface.co/models/google/gemma-7b-it",
+        headers=headers,
+        json=payload
+    )
+    return {"summary": response.json()[0]['generated_text'], "sentiment": "Bullish"}  # Simplify for now
+
+#def analyze_sentiment_with_llm(prompt):
     # Stub - replace with actual API call
-    return {
-        "summary": "Traders are positioning for downside on AAPL with high put volume at 170 strike.",
-        "sentiment": "Bearish"
-    }
+    #return {
+        #"summary": "Traders are positioning for downside on AAPL with high put volume at 170 strike.",
+        #"sentiment": "Bearish"
+   # }
 
 def fetch_options_flow(ticker_symbol):
     ticker = yf.Ticker(ticker_symbol)
