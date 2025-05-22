@@ -31,6 +31,21 @@ def analyze_sentiment_with_llm(prompt):
         #"summary": "Traders are positioning for downside on AAPL with high put volume at 170 strike.",
         #"sentiment": "Bearish"
    # }
+try:
+    response = requests.post(...)
+    output = response.json()
+    if isinstance(output, list):
+        summary = output[0].get('generated_text', '')
+    else:
+        summary = output.get('generated_text', '')
+except Exception as e:
+    summary = "Error in LLM call: " + str(e)
+if "bearish" in summary.lower():
+    sentiment = "Bearish"
+elif "bullish" in summary.lower():
+    sentiment = "Bullish"
+else:
+    sentiment = "Neutral"
 
 def fetch_options_flow(ticker_symbol):
     ticker = yf.Ticker(ticker_symbol)
