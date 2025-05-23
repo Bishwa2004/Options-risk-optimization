@@ -1,5 +1,5 @@
 # options_volume_tracker.py
-# Track S&P 500 options volume for selected expiry and strike range, detect anomalies, visualize, and LLM summary
+# Track S&P 500 options volume for selected expiry and strike range, detect anomalies, visualize, LLM summary, and trade recommendation
 
 import yfinance as yf
 import pandas as pd
@@ -22,6 +22,9 @@ load_dotenv()
 # Get S&P 500 tickers
 sp500 = pd.read_html("https://en.wikipedia.org/wiki/List_of_S%26P_500_companies")[0]
 tickers = sp500['Symbol'].tolist()
+
+# Ticker Watchlist (custom user-defined for priority scan)
+WATCHLIST = ["AAPL", "TSLA", "NVDA", "MSFT", "META"]
 
 # Today's date
 today = datetime.today().strftime("%Y-%m-%d")
@@ -101,15 +104,19 @@ plt.tight_layout()
 plt.savefig(f"{HISTORY_DIR}/anomalies_plot_{today}.png")
 print(f"📊 Saved anomaly plot to anomalies_plot_{today}.png")
 
-# Optional: LLM Summary using OpenAI
+# LLM Summary and Trade Idea
 if "OPENAI_API_KEY" in os.environ:
     openai.api_key = os.getenv("OPENAI_API_KEY")
     llm_summaries = []
     for row in anomalies_detected.to_dict(orient="records"):
         prompt = f"""
 The options volume for {row['ticker']} rose by {round(row['z_score'], 2)} standard deviations today.
-This was observed in the strike range {STRIKE_RANGE[0]}–{STRIKE_RANGE[1]} expiring on {today}.
-Explain what this might mean for trader sentiment and possible causes.
+Strike range: {STRIKE_RANGE[0]}–{STRIKE_RANGE[1]}, Expiry: {today}.
+Call IV: {row['call_iv']:.2%}, Put IV: {row['put_iv']:.2%}.
+
+1. Explain the sentiment or possible cause.
+2. Suggest a potential options trade a trader might consider.
+3. Include reasoning for the trade idea.
 """
         try:
             response = openai.ChatCompletion.create(
@@ -126,3 +133,9 @@ Explain what this might mean for trader sentiment and possible causes.
     with open(llm_file, "w") as f:
         json.dump(llm_summaries, f, indent=2)
     print(f"🧠 LLM summaries saved to {llm_file}")
+
+# Save a simplified JSON for graphing directly (charting in Lovable)
+chart_data = plot_df[['ticker', 'z_score']].to_dict(orient="records")
+with open(f"{HISTORY_DIR}/graph_data_{today}.json", "w") as f:
+    json.dump(chart_data, f, indent=2)
+print("📊 Saved chart-ready JSON for Lovable")
